@@ -1,0 +1,781 @@
+%% M1-M-M2
+clear
+clc
+
+%% Parameters 
+
+k1 = 0.5;
+k2 = 0.5;  
+k_m1 = 24/72;
+k_m2 = 24/72;
+delta = 0.02;
+s1 = 0;
+s2 = 0;
+g = 0.2;
+epsilon = 0;
+
+%% time setting 
+
+t0 = 0;
+t_end = 1000;
+report_point = (t_end - t0) * 24 + 1;
+report_time = linspace(t0,t_end,report_point);
+len = length(report_time);
+
+%% Variables 
+
+M = zeros(1,len);
+M1 = zeros(1,len);
+M2 = zeros(1,len);
+
+M0 = 1e+6;
+M10 = 0;
+M20 = 0;
+
+M(1) = M0;
+M1(1) = M10;
+M2(1) = M20;
+
+init = [M0,M10,M20]';
+
+options = odeset('RelTol',1e-10,'AbsTol',1e-20);
+
+%%
+
+[~,y] = ode15s(@fun, report_time, init, options,...
+                k1,k2,k_m1,k_m2,delta,s1,s2,M0,g,epsilon);
+            
+%% Some plots 1
+figure(1)
+plot(report_time, y(:,1),'k');
+hold on 
+plot(report_time, y(:,2),'g');
+plot(report_time, y(:,3),'r');
+hold off 
+legend('M0','M1','M2')
+
+
+%% 
+%{
+s1 = 0;
+s2 = 0;
+[~,y1] = ode15s(@fun, report_time, init, options,...
+                k1,k2,k_m1,k_m2,delta,s1,s2,M0,g);
+            
+figure(2)
+plot(report_time, y1(:,1),'k');
+hold on 
+plot(report_time, y1(:,2),'g');
+plot(report_time, y1(:,3),'r');
+hold off 
+
+legend('M0','M1','M2')
+%}
+%% 
+
+
+s1 = 1;
+s2 = 1;
+[~,y2] = ode15s(@fun, report_time, init, options,...
+                k1,k2,k_m1,k_m2,delta,s1,s2,M0,g,epsilon);
+            
+figure(3)
+plot(report_time, y2(:,1),'k','LineWidth',2);
+hold on 
+plot(report_time, y2(:,2),'k-.','LineWidth',2);
+plot(report_time, y2(:,3),'k--','LineWidth',2);
+hold off 
+xlabel('Time (days)')
+ylabel('Number of macrophages (cells)')
+%title('Macrophages in healthy condition')
+legend('M0','M1','M2','FontSize',20)
+set(gca, 'FontSize',24)
+
+%% M1-M2 Interation
+
+
+k12 = 0.09;
+k21 = 0.02; %0.02
+[~,y2] = ode15s(@funInterM, report_time, init, options,...
+                k1,k2,k_m1,k_m2,delta,k12,k21,M0,g,epsilon);
+            
+figure(9)
+plot(report_time, y2(:,1),'k','LineWidth',2);
+hold on 
+plot(report_time, y2(:,2),'k-.','LineWidth',2);
+plot(report_time, y2(:,3),'k--','LineWidth',2);
+hold off 
+xlabel('Time (days)')
+ylabel('Number of macrophages (cells)')
+%title('Macrophages in healthy condition')
+legend('M0','M1','M2','FontSize',20)
+set(gca, 'FontSize',24)
+%% Immunomodulators 
+epsilon = 0 ;
+
+t_im_0 = 1000;
+t_im_end = 1001;
+report_point_im = (t_im_end - t_im_0) * 24 + 1;
+report_time_im = linspace(t_im_0,t_im_end, report_point_im);
+len_im = length(report_time_im);
+
+%%
+M_im = zeros(1,len_im);
+M1_im = zeros(1,len_im);
+M2_im = zeros(1,len_im);
+
+M_im0 = y2(end,1);
+M1_im0 = y2(end,2);
+M2_im0 = y2(end,3);
+
+M_im(1) = M_im0;
+M1_im(1) = M1_im0;
+M2_im(1) = M2_im0;
+
+init_im = [M_im0, M1_im0, M2_im0]';
+
+%%
+[~,y_im] = ode15s(@fun, report_time_im, init_im, options,...
+                k1,k2,k_m1,k_m2,delta,s1,s2,M0,g,epsilon);
+
+%%
+
+plot(report_time_im, y_im(:,1),'k','LineWidth',2);
+hold on 
+plot(report_time_im, y_im(:,2),'g','LineWidth',2);
+plot(report_time_im, y_im(:,3),'r','LineWidth',2);
+ 
+
+
+
+
+%% Immunomodulators 2
+epsilon = 0;
+
+t_im2_0 = 1001;
+t_im2_end = 1008;
+report_point_im2 = (t_im2_end - t_im2_0) * 24 + 1;
+report_time_im2 = linspace(t_im2_0,t_im2_end, report_point_im2);
+len_im2 = length(report_time_im2);
+
+%%
+M_im2 = zeros(1,len_im2);
+M1_im2 = zeros(1,len_im2);
+M2_im2 = zeros(1,len_im2);
+
+M_im20 = y_im(end,1);
+M1_im20 = y_im(end,2);
+M2_im20 = y_im(end,3);
+
+M_im2(1) = M_im20;
+M1_im2(1) = M1_im20;
+M2_im2(1) = M2_im20;
+
+init_im2 = [M_im20, M1_im20, M2_im20]';
+
+%%
+[~,y_im2] = ode15s(@fun, report_time_im2, init_im2, options,...
+                k1,k2,k_m1,k_m2,delta,s1,s2,M0,g,epsilon);
+
+%%
+
+plot(report_time_im2, y_im2(:,1),'k','LineWidth',2);
+plot(report_time_im2, y_im2(:,2),'g','LineWidth',2);
+plot(report_time_im2, y_im2(:,3),'r','LineWidth',2);
+
+
+
+
+
+
+
+%%
+%%%%%%% TIV - M1MM2 %%%%%%%
+
+%% Viral parameters 
+
+beta = 3.8e-5; %3.8e-5 (benchmark)
+delta_I = 3.6;
+p = 7.1e-2;
+c = 20; %%change to 20 Cao et al
+kappa = 24 * 3.2e-5;
+q1 = 1e-6;%1e-6;  % cells 
+q2 = 1e-6;%1e-6; % virus
+
+kappa_a = 0.2;
+mu =  1e-6; %2.5e-6;
+rho = 1; %1
+
+epsilon = 0;
+
+%% time setting 
+
+t0_inf = 0;
+t_end_inf = 15;
+report_point_inf = (t_end_inf - t0_inf) * 24 + 1;
+report_time_inf = linspace(t0_inf, t_end_inf, report_point_inf);
+len_inf = length(report_time_inf);
+
+%% Viral Variables 
+
+
+M_inf = zeros(1,len_inf);
+M1_inf = zeros(1,len_inf);
+M2_inf = zeros(1,len_inf);
+T = zeros(1,len_inf);
+I = zeros(1,len_inf);
+V = zeros(1,len_inf);
+A = zeros(1,len_inf);
+
+M_inf0 = y2(end,1);  % y_im(end,1)
+M1_inf0 = y2(end,2); % y_im(end,2)
+M2_inf0 = y2(end,3); % y_im(end,3)
+
+T0 = 4e+8;
+I0 = 0;
+V0 = 3.3e-1; % 3.3e-1
+A0 = 0;
+
+M_inf(1) = M_inf0;
+M1_inf(1) = M1_inf0;
+M2_inf(1) = M2_inf0;
+T(1) = T0;
+I(1) = I0;
+V(1) = V0;
+A(1) = A0;
+
+init_inf = [M_inf0,M1_inf0,M2_inf0,T0,I0,V0,A0]';
+
+%%  ode15s
+%h = waitbar(0,'Please wait...');
+%for i = 1:1000
+[~,y_inf] = ode15s(@fun_inf, report_time_inf, init_inf, options,...
+                        k1,k2,k_m1,k_m2,delta,s1,s2,M0,g,...
+                        beta,delta_I,p,c,kappa,q1,q2,...
+                        kappa_a,mu,rho, epsilon);
+%     waitbar(i/1000,h);
+%end 
+%close(h)
+
+%% ode15s InterM
+[~,y_inf_InterM] = ode15s(@fun_inf_InterM, report_time_inf, init_inf, options,...
+                        k1,k2,k_m1,k_m2,delta,k12,k21,M0,g,...
+                        beta,delta_I,p,c,kappa,q1,q2,...
+                        kappa_a,mu,rho, epsilon);
+                    
+%% Plots Viral Dynamics Components
+V_Growth = p*y_inf(:,5);
+V_Natural = c*y_inf(:,6);
+V_Macrophage = kappa * y_inf(:,6) .* y_inf(:,2);
+V_Abs = kappa_a * y_inf(:,6) .* y_inf(:,7);
+
+figure(89);
+semilogy(report_time_inf, V_Growth,'k','LineWidth',1.5) % Viral Growth
+hold on 
+semilogy(report_time_inf, V_Natural, 'k:', 'LineWidth',1.5) % viral natural decay
+semilogy(report_time_inf, V_Macrophage, 'k-.', 'LineWidth',1.5) % viral decay by M1
+semilogy(report_time_inf, V_Abs, 'k--', 'LineWidth',1.5) % viral decay by Abs
+ylim([1e-3,1e+8])
+fill([0 15 15 0], [0 0 max(ylim) max(ylim)],[0.4940 0.1840 0.5560],'FaceAlpha',.15)
+hold off
+ylabel('Viral dynamics (u_v/day)')
+xlabel('Days post infection (p.i.)')
+legend('viral growth','natural decay','engulfed by M1','killed by Abs','FontSize',18)
+set(gca,'YTick',[0.01,1,100,10000,1000000,100000000],'FontSize',23)
+
+
+%[0.3010 0.7450 0.9330]
+%[0.4940 0.1840 0.5560]
+%[0.9290 0.6940 0.1250]
+
+%% Plots M1 Dynamics Components
+M1_Convert = k1 / (1 + s1 * y_inf(:,3)/M0) .* y_inf(:,1); % M1 convert from M
+M1_ToM = k_m1 * y_inf(:,2); % M1 convert back to M
+M1_Natural = delta * y_inf(:,2); % natural decay M1
+M1_I = q1 * y_inf(:,5) .* y_inf(:,1); % M1 activated by I
+M1_V = q2 * y_inf(:,6) .* y_inf(:,1); % M1 activated by V
+figure(87)
+semilogy(report_time_inf, M1_Convert,'k','LineWidth',1.5)
+hold on 
+semilogy(report_time_inf, M1_ToM,'r--','LineWidth',1.5)
+semilogy(report_time_inf, M1_Natural,'r-.','LineWidth',1.5)
+semilogy(report_time_inf, M1_I,'k--','LineWidth',1.5)
+hold on
+semilogy(report_time_inf, M1_V,'k-.','LineWidth',1.5)
+hold off
+ylabel('Macrophage dynamics (u_v/day)')
+xlabel('Days post infection (p.i.)')
+legend('Convert from M','Convert back to M','natural decay','Activated by I','Activated by V','FontSize',18)
+                    
+
+%% BenchMark Plot
+
+figure(119)
+yyaxis left
+semilogy(report_time_inf, y_inf(:,6),'k','LineWidth',2)
+ylim([1e-2,1e+5])
+ylabel('Viral load (fold change)')
+set(gca, 'ycolor','k')
+yyaxis right
+plot(report_time_inf,y_inf(:,2),'r', 'LineWidth',2)
+hold on
+plot(report_time_inf,y_inf(:,3), 'r--', 'LineWidth',2)
+ylabel('Number of macrophages')
+set(gca, 'ycolor','k')
+hold off
+xlabel('Days post infection (p.i.)')
+legend('V', 'M1','M2','FontSize',20)
+set(gca, 'FontSize',24)
+
+
+%% BenchMark Plot (InterM)
+
+figure(121)
+yyaxis left
+semilogy(report_time_inf, y_inf_InterM(:,6),'k','LineWidth',2)
+ylim([1e-2,1e+5])
+ylabel('Viral load (fold change)')
+set(gca, 'ycolor','k')
+yyaxis right
+plot(report_time_inf,y_inf_InterM(:,2),'r', 'LineWidth',2)
+hold on
+plot(report_time_inf,y_inf_InterM(:,3), 'r--', 'LineWidth',2)
+ylabel('Number of macrophages')
+set(gca, 'ycolor','k')
+hold off
+xlabel('Days post infection (p.i.)')
+legend('V', 'M1','M2','FontSize',20)
+set(gca, 'FontSize',24)
+
+
+
+
+%% Plots Viral Load--BenchMark
+
+figure(12)
+semilogy(report_time_inf, y_inf(:,6),'k-','LineWidth',2)
+hold on 
+ylabel('Viral load (fold change)')
+xlabel('Days post infection (p.i.)')
+ylim([1e-2, 1e+5])
+legend('High \beta', 'Medium \beta', 'Low \beta', 'FontSize', 20)
+set(gca,'FontSize',24)
+
+%% Plots Viral Load--BenchMark (InterM)
+
+figure(14)
+semilogy(report_time_inf, y_inf_InterM(:,6),'k--','LineWidth',2)
+hold on 
+ylabel('Viral load (fold change)')
+xlabel('Days post infection (p.i.)')
+ylim([1e-2, 1e+5])
+legend('High \beta', 'Medium \beta', 'Low \beta', 'FontSize', 20)
+set(gca,'FontSize',24)
+
+
+
+%% Plots Target Cells--BenchMark
+
+figure(13)
+semilogy(report_time_inf, y_inf(:,4),'k','LineWidth',2)
+hold on 
+ylabel('Number of epithelial cells')
+xlabel('Days post infection (p.i.)')
+legend('High \beta', 'Medium \beta', 'Low \beta', 'FontSize', 20)
+set(gca,'FontSize',24)
+
+%% Plots Target Cells--BenchMark (InterM)
+
+figure(16)
+semilogy(report_time_inf, y_inf_InterM(:,4),'k--','LineWidth',2)
+hold on 
+ylabel('Number of epithelial cells')
+xlabel('Days post infection (p.i.)')
+legend('High \beta', 'Medium \beta', 'Low \beta', 'FontSize', 20)
+set(gca,'FontSize',24)
+
+
+
+%% 
+%{
+figure(98) 
+plot(report_time_inf, y_inf(:,1),'k')
+hold on 
+plot(report_time_inf, y_inf(:,2),'g')
+plot(report_time_inf, y_inf(:,3),'r')
+%}
+
+%% Macrophage BenchMark 
+figure(104) 
+plot(report_time_inf, y_inf(:,1),'k','LineWidth',2)
+hold on
+plot(report_time_inf, y_inf(:,2),'k-.','LineWidth',2)
+plot(report_time_inf, y_inf(:,3),'k--','LineWidth',2)
+ylim([0,6e+5])
+patch([0 15 15 0], [0 0 max(ylim) max(ylim)],[0.9290 0.6940 0.1250],'FaceAlpha',.15)
+hold off
+xlabel('Days post infection (p.i.)')
+ylabel('Number of macrophages')
+legend('M','M1','M2')
+set(gca, 'FontSize',24)
+
+
+%% Macrophage BenchMark (InterM) 
+figure(106) 
+plot(report_time_inf, y_inf_InterM(:,1),'k','LineWidth',2)
+hold on
+plot(report_time_inf, y_inf_InterM(:,2),'k-.','LineWidth',2)
+plot(report_time_inf, y_inf_InterM(:,3),'k--','LineWidth',2)
+ylim([0,6e+5])
+patch([0 15 15 0], [0 0 max(ylim) max(ylim)],[0.9290 0.6940 0.1250],'FaceAlpha',.15)
+hold off
+xlabel('Days post infection (p.i.)')
+ylabel('Number of macrophages')
+legend('M','M1','M2','FontSize',20)
+set(gca, 'FontSize',24)
+
+
+
+%[0.3010 0.7450 0.9330]
+%[0.4940 0.1840 0.5560]
+%[0.9290 0.6940 0.1250]
+
+
+
+
+
+%% sensitivity to 'Beta' and 'P'
+beta = 8e-6 : 1e-5 : 6e-4; %6e-5
+p = 7.1e-3 : 3e-3: 2e-1; %: 3e-2: 2e-1;
+len_beta = length(beta);
+len_p = length(p);
+result_mat_V = zeros(len_beta, len_p);
+result_mat_M = zeros(len_beta, len_p);
+result_mat_T = zeros(len_beta, len_p);
+
+for i = 1:len_beta
+    for j = 1:len_p 
+        [~,y_inf_beta_p] = ode15s(@fun_inf, report_time_inf, init_inf, options,...
+                        k1,k2,k_m1,k_m2,delta,s1,s2,M0,g,...
+                        beta(i),delta_I,p(j),c,kappa,q1,q2,...
+                        kappa_a,mu,rho,epsilon);
+         result_mat_V(i,j) = trapz(y_inf_beta_p(:,6)); % Virus
+         result_mat_M(i,j) = trapz(y_inf_beta_p(:,2)); % M1
+         result_mat_T(i,j) = y_inf_beta_p(end,4); % Target cells
+     end
+end
+
+%%
+M_V = readmatrix('MatV.xls');
+M_M = readmatrix('MatM.xls');
+
+%%
+figure(1)
+h = surf(p,beta,M_V);
+%c_V.LineWidth = 3;
+colormap(copper);
+cb = colorbar;
+axis tight
+alpha(0.8)
+xlabel('p')
+ylabel('\beta')
+zlabel('AUC of viral load')
+set(gca,'FontSize',20)
+
+%%
+
+figure(2)
+h2 = surf(p,beta,M_M);
+%c_V.LineWidth = 3;
+colormap(copper);
+cb = colorbar;
+axis tight
+alpha(0.8)
+xlabel('p')
+ylabel('\beta')
+zlabel('AUC of Macrophages')
+set(gca,'FontSize',20)
+
+
+%% sensitivity to viral infectivity 'Beta'
+beta = 8e-7 : 1e-6 : 2e-4;
+p = 7.1e-2;
+len_beta = length(beta);
+plot_var = zeros(len_beta,7);
+T_var= zeros(len_beta,1);
+for j = 1:len_beta
+
+        [~,y_inf_beta] = ode15s(@fun_inf, report_time_inf, init_inf, options,...
+                        k1,k2,k_m1,k_m2,delta,s1,s2,M0,g,...
+                        beta(j),delta_I,p,c,kappa,q1,q2,...
+                        kappa_a,mu,rho,epsilon);
+         % Overall AUC           
+         plot_var(j,1) = trapz(y_inf_beta(:,6)); % Virus
+         plot_var(j,2) = trapz(y_inf_beta(:,2)); % Macrophages
+         
+         % Components AUC of Macrophages 
+         plot_var(j,3) = trapz(k1 ./ (1 + s1 * y_inf_beta(:,3)/M0).* y_inf_beta(:,1)); % M1 convert from M
+         plot_var(j,4) = trapz(k_m1 * y_inf_beta(:,2)); % M1 convert back to M
+         plot_var(j,5) = trapz(delta * y_inf_beta(:,2)); % natural decay M1
+         plot_var(j,6) = trapz(q1 * y_inf_beta(:,5) .* y_inf_beta(:,1)); % M1 activated by I
+         plot_var(j,7) = trapz(q2 * y_inf_beta(:,6) .* y_inf_beta(:,1)); % M1 activated by V
+         
+         % Depletion of Target Cells 
+         T_var(j) = y_inf_beta(end,4);
+        
+         %{
+         figure(j)
+         yyaxis left 
+         semilogy(report_time_inf, y_inf_beta(:,6),'LineWidth',2)
+         %ylabel('Viral load (fold change)')
+         yyaxis right 
+         plot(report_time_inf, y_inf_beta(:,2),'r','LineWidth',2)
+         %ylabel('Number of macrophages (cells)')
+         hold on
+         plot(report_time_inf, y_inf_beta(:,3),'r-.','LineWidth',2)  
+         hold off
+         xlabel('Time (days)')
+         %title('Virus-Macrophages Interaction')
+         legend('V','M1','M2','FontSize',14)
+         set(gca, 'FontSize',20)
+         %}
+end 
+
+
+
+
+
+%%
+[maxY_beta, indexOfMaxY_beta] = max(plot_var(:,2));
+xAtMax_beta = beta(indexOfMaxY_beta);
+
+%%
+figure(143)
+plot(beta, plot_var(:,3))
+ylabel('1')
+figure(144)
+plot(beta, plot_var(:,6))
+ylabel('2')
+figure(145)
+plot(beta, plot_var(:,7))
+ylabel('3')
+figure(146)
+plot(beta, plot_var(:,4))
+ylabel('4')
+figure(147)
+plot(beta, plot_var(:,5))
+ylabel('5')
+
+%% Plot_beta_sensitivity 
+figure(33)
+yyaxis left 
+plot(beta,plot_var(:,2),'k-.','LineWidth',2)
+ylabel('AUC of Macrophages')
+set(gca, 'ycolor','k')
+yyaxis right 
+plot(beta,plot_var(:,1),'k-','LineWidth',2)
+ylabel('AUC of viral Load')
+set(gca, 'ycolor','k')
+
+%2.78e-5
+hold on
+patch([0 2.78e-5 2.78e-5 0], [0 0 max(ylim) max(ylim)], [0.3010 0.7450 0.9330],'FaceAlpha',.15)
+patch([2.78e-5 2.78e-5 xAtMax_beta xAtMax_beta], [0 max(ylim) max(ylim) 0], [0.4940 0.1840 0.5560],'FaceAlpha',.15)
+patch([xAtMax_beta max(xlim) max(xlim) xAtMax_beta], [0 0 max(ylim) max(ylim)], [0.9290 0.6940 0.1250],'FaceAlpha',.15)
+hold off
+legend('V','M1')
+xlabel('\beta') 
+
+set(gca, 'FontSize',24)
+
+%%
+figure(34)
+plot(beta, T_var, 'k-', 'LineWidth', 2)
+hold on 
+patch([0 3.48e-5 3.48e-5 0], [0 0 max(ylim) max(ylim)], [0.3010 0.7450 0.9330],'FaceAlpha',.15)
+patch([3.48e-5 3.48e-5 xAtMax_beta xAtMax_beta], [0 max(ylim) max(ylim) 0], [0.4940 0.1840 0.5560],'FaceAlpha',.15)
+patch([xAtMax_beta max(xlim) max(xlim) xAtMax_beta], [0 0 max(ylim) max(ylim)], [0.9290 0.6940 0.1250],'FaceAlpha',.15)
+xlabel('\beta') 
+ylabel('Number of epithelial cells')
+set(gca, 'FontSize',24)
+
+%%
+beta = 2.78e-5;
+[~,y_inf_V1] = ode15s(@fun_inf, report_time_inf, init_inf, options,...
+                        k1,k2,k_m1,k_m2,delta,s1,s2,M0,g,...
+                        beta,delta_I,p,c,kappa,q1,q2,...
+                        kappa_a,mu,rho, epsilon);
+V1 = trapz(y_inf_V1(:,6));
+
+beta = xAtMax_beta;
+[~,y_inf_V2] = ode15s(@fun_inf, report_time_inf, init_inf, options,...
+                        k1,k2,k_m1,k_m2,delta,s1,s2,M0,g,...
+                        beta,delta_I,p,c,kappa,q1,q2,...
+                        kappa_a,mu,rho, epsilon);
+V2 = trapz(y_inf_V2(:,6));
+
+
+%% 
+
+figure(331)
+plot(plot_var(:,1), plot_var(:,2), 'k-', 'LineWidth',2)
+hold on 
+patch([0 V1 V1 0],[0 0 max(ylim) max(ylim)], [0.3010 0.7450 0.9330],'FaceAlpha',.15)
+patch([V1 V2 V2 V1], [0 0 max(ylim) max(ylim)], [0.4940 0.1840 0.5560],'FaceAlpha',.15)
+patch([V2 max(xlim) max(xlim) V2], [0 0 max(ylim) max(ylim)],[0.9290 0.6940 0.1250],'FaceAlpha',.15)
+ylabel('AUC of macrophages')
+xlabel('AUC of viral loads')
+legend('\beta increases from left to right','FontSize',28)
+set(gca, 'FontSize',24)
+
+
+
+
+%% sensitivity to viral infectivity 'P'
+beta = 3.8e-5;
+p = 7.1e-3 : 1e-3: 5e-1;   %7.1e-3 : 3e-2: 2e-1;
+len_p = length(p);
+plot_var_p = zeros(len_p,2);
+
+T_var_p = zeros(len_p,1);
+for j = 1:len_p
+
+        [~,y_inf_p] = ode15s(@fun_inf, report_time_inf, init_inf, options,...
+                        k1,k2,k_m1,k_m2,delta,s1,s2,M0,g,...
+                        beta,delta_I,p(j),c,kappa,q1,q2,...
+                        kappa_a,mu,rho,epsilon);
+                    
+         plot_var_p(j,1) = trapz(y_inf_p(:,6));
+         plot_var_p(j,2) = trapz(y_inf_p(:,2));   
+         T_var_p(j) = y_inf_p(end,4);
+         %{
+         figure(j)
+         yyaxis left 
+         semilogy(report_time_inf, y_inf_p(:,6),'LineWidth',1.2)
+         yyaxis right 
+         plot(report_time_inf, y_inf_p(:,2),'k','LineWidth',1.2)
+         hold on
+         plot(report_time_inf, y_inf_p(:,3),'r','LineWidth',1.2) 
+         %}
+end 
+
+[maxY, indexOfMaxY] = max(plot_var_p(:,2));
+xAtMax_p = p(indexOfMaxY);
+
+%% Plot_p_sensitivity 
+figure(35) 
+yyaxis left 
+plot(p,plot_var_p(:,1),'k-','LineWidth',2)
+yyaxis right 
+plot(p,plot_var_p(:,2),'k-.','LineWidth',2)
+hold on
+patch([0 0.06 0.06 0], [0 0 max(ylim) max(ylim)], [0.3010 0.7450 0.9330],'FaceAlpha',.15)
+patch([0.06 0.06 xAtMax_p xAtMax_p], [0 max(ylim) max(ylim) 0], [0.4940 0.1840 0.5560],'FaceAlpha',.15)
+patch([xAtMax_p max(xlim) max(xlim) xAtMax_p], [0 0 max(ylim) max(ylim)], [0.9290 0.6940 0.1250],'FaceAlpha',.15)
+hold off
+legend('V','M1')
+%%
+
+figure(36)
+plot(p, T_var_p, 'k-', 'LineWidth', 2)
+hold on 
+patch([0 0.06 0.06 0], [0 0 max(ylim) max(ylim)], [0.3010 0.7450 0.9330],'FaceAlpha',.2)
+patch([0.06 0.06 xAtMax_p xAtMax_p], [0 max(ylim) max(ylim) 0], [0.4940 0.1840 0.5560],'FaceAlpha',.2)
+patch([xAtMax_p max(xlim) max(xlim) xAtMax_p], [0 0 max(ylim) max(ylim)], [0.9290 0.6940 0.1250],'FaceAlpha',.2)
+
+hold off
+%%
+figure(332)
+plot(plot_var_p(:,1), plot_var_p(:,2), 'k-', 'LineWidth',1.5)
+ylabel('AUC of macrophages')
+xlabel('AUC of viral loads')
+legend('p increases from left to right','FontSize',28)
+set(gca, 'FontSize',28)
+
+%% sensitivity to viral infectivity 'q1'
+p = 7.1e-2;
+q1 = 5e-8:3e-7:8e-6; %1e-8:3e-7:2e-6;
+len_q1 = length(q1);
+plot_var_q1 = zeros(len_q1,2);
+
+for j = 1:len_q1
+
+        [~,y_inf_q1] = ode15s(@fun_inf, report_time_inf, init_inf, options,...
+                        k1,k2,k_m1,k_m2,delta,s1,s2,M0,g,...
+                        beta,delta_I,p,c,kappa,q1(j),q2,...
+                        kappa_a,mu,rho,epsilon);
+                    
+         plot_var_q1(j,1) = trapz(y_inf_q1(:,6));
+         plot_var_q1(j,2) = trapz(y_inf_q1(:,2));   
+         
+         %{
+         figure(j)
+         yyaxis left 
+         semilogy(report_time_inf, y_inf_q1(:,6),'LineWidth',1.2)
+         yyaxis right 
+         plot(report_time_inf, y_inf_q1(:,2),'k','LineWidth',1.2)
+         hold on
+         plot(report_time_inf, y_inf_q1(:,3),'r','LineWidth',1.2) 
+         %}
+end 
+   
+
+%% Plot_q1_sensitivity 
+figure(34)
+yyaxis left 
+plot(q1,plot_var_q1(:,1),'r*-','LineWidth',2)
+yyaxis right 
+plot(q1,plot_var_q1(:,2),'g*-','LineWidth',2)
+legend('V','M1')
+
+%%
+figure(331)
+plot(plot_var_q1(:,1), plot_var_q1(:,2), 'k>-', 'LineWidth',1.5)
+ylabel('AUC of macrophages')
+xlabel('AUC of viral loads')
+legend('q_1 increases from left to right','FontSize',25)
+set(gca, 'FontSize',28)
+
+%% sensitivity to viral infectivity 'q2'
+q1 = 1e-6;
+q2 = 5e-8:3e-7:8e-6;
+len_q2 = length(q2);
+plot_var_q2 = zeros(len_q2,2);
+
+for j = 1:len_q2
+
+        [~,y_inf_q2] = ode15s(@fun_inf, report_time_inf, init_inf, options,...
+                        k1,k2,k_m1,k_m2,delta,s1,s2,M0,g,...
+                        beta,delta_I,p,c,kappa,q1,q2(j),...
+                        kappa_a,mu,rho,epsilon);
+                    
+         plot_var_q2(j,1) = trapz(y_inf_q2(:,6));
+         plot_var_q2(j,2) = trapz(y_inf_q2(:,2));   
+         
+         %{
+         figure(j)
+         yyaxis left 
+         semilogy(report_time_inf, y_inf_q2(:,6),'LineWidth',1.2)
+         yyaxis right 
+         plot(report_time_inf, y_inf_q2(:,2),'k','LineWidth',1.2)
+         hold on
+         plot(report_time_inf, y_inf_q2(:,3),'r','LineWidth',1.2)
+         %}
+end 
+
+
+%% Plot_q2_sensitivity 
+figure(36)
+yyaxis left 
+plot(q2,plot_var_q2(:,1),'r*-','LineWidth',2)
+yyaxis right 
+plot(q2,plot_var_q2(:,2),'g*-','LineWidth',2)
+legend('V','M1')
+
+%%
+figure(331)
+plot(plot_var_q2(:,1), plot_var_q2(:,2), 'k>-', 'LineWidth',1.5)
+ylabel('AUC of macrophages')
+xlabel('AUC of viral loads')
+legend('q_2 increases from left to right','FontSize',25)
+set(gca, 'FontSize',28)
